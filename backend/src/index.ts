@@ -13,6 +13,17 @@ app.use(express.json());
 app.use("/categories", categoriesRouter);
 app.use("/todos", todosRouter);
 
+app.use((
+    err: Error & { status?: number },
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction
+) => {
+    const status = err.status ?? 500;
+    if (status >= 500) console.error(err);
+    res.status(status).json({ error: err.message })
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 })

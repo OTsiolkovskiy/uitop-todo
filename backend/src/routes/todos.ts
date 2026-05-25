@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getTodos } from "../services/todoService.js";
+import { createTodo, getTodos } from "../services/todoService.js";
 
 const router = Router();
 
@@ -8,5 +8,15 @@ router.get("/", (req, res) => {
 
     res.json(getTodos(category))
 });
+
+router.post("/", (req, res, next) => {
+    try {
+        const { text, category } = req.body ?? {};
+        const todo = createTodo({ text, category});
+        res.status(201).json(todo);
+    } catch (error) {
+        next(error);
+    }
+})
 
 export default router;

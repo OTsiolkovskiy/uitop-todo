@@ -1,5 +1,7 @@
 import db from "../db.js";
-import { Category, Todo, TodoRow } from "../type.js";
+import { Category, CreateTodo, Todo, TodoRow } from "../type.js";
+
+const ACTIVE_LIMIT = 5;
 
 export function getCategories(): Category[] {
     return db.prepare("SELECT * FROM categories").all() as Category[];
@@ -26,4 +28,39 @@ export function getTodos(category: string): Todo[] {
     const rows = db.prepare("SELECT * FROM todos WHERE category = ? ORDER BY id DESC").all(normalized) as TodoRow[];
 
     return rows.map(rowToTodo);
+}
+
+export function createTodo(body: CreateTodo): Todo {
+    const text = body.text.trim();
+    const category = body.category.trim();
+
+    if (!text || !category) {
+        const error = new Error("Text and category are required");
+        (error as Error & { status: number }).status = 400;
+        throw error
+    }
+
+    const categoryExists = db.prepare("SELECT 1 FROM categories WHERE name = ?").get(category);
+
+    if (!categoryExists) {
+        const err = new Error(`Unknown category: ${category}`);
+        (err as Error & { status: number }).status = 400;
+        throw err;
+    }
+
+    const activeCount = db
+        .prepare("SELECT COUNT(*) AS count FROM todos WHERE category = ? AND completed = 0")
+        .get(category) as { count: number };
+
+    if (activeCount.count >= ACTIVE_LIMIT) {
+        const err = new Error(`Category ${category} already has 5 tasks`);
+        (err as Error & { status: number }).status = 400;
+        throw err;
+    }
+
+
+    const result = db.prepare("INSERT INTO todos (text, category) VALUES (?, ?)").run(text, category);
+    const row = db.prepare("SELECT * FROM todos WHERE id = ?").get(result.lastInsertRowid) as TodoRow;
+
+    return rowToTodo(row);
 }
