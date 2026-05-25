@@ -80,3 +80,13 @@ export function updateTodo(id: number, completed: boolean): Todo {
 
     return rowToTodo(row);
 }
+
+export function deleteTodo(id: number) {
+    const result = db.prepare("DELETE FROM todos WHERE id = ?").run(id);
+
+    if (result.changes === 0) {
+        const err = new Error("Todo not found");
+        (err as Error & { status: number }).status = 404;
+        throw err;
+    }
+}

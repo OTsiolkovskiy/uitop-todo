@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createTodo, getTodos, updateTodo } from "../services/todoService.js";
+import { createTodo, deleteTodo, getTodos, updateTodo } from "../services/todoService.js";
 
 const router = Router();
 
@@ -33,5 +33,20 @@ router.patch("/:id", (req, res, next) => {
         next(error);
     }
 });
+
+router.delete("/:id", (req, res, next) => {
+    try {
+        const id = Number(req.params.id);
+
+        if (Number.isNaN(id)) {
+            return res.status(400).json({ error: "Invalid ID" });
+        }
+
+        deleteTodo(id);
+        res.status(204).send();
+    } catch (error) {
+        next(error);
+    }
+})
 
 export default router;
