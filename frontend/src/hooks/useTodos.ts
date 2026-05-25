@@ -33,7 +33,18 @@ export function useTodos() {
         } finally {
             setIsLoading(false);
         }
-    }, [])
+    }, []);
+
+    const createTodo = useCallback(
+        async (text: string, category: string): Promise<string | null> => {
+            try {
+                await api.post("/todos", { text, category });
+                await fetchTodos(selectedCategory);
+                return null;
+            } catch (err) {
+                return getErrorMessage(err);
+            }
+        }, [selectedCategory, fetchTodos]);
 
     useEffect(() => {
         fetchCategories();
@@ -54,7 +65,8 @@ export function useTodos() {
         refetch, 
         isLoading, 
         selectedCategory, 
-        setSelectedCategory 
+        setSelectedCategory,
+        createTodo
     };
 };
 

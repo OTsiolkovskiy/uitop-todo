@@ -1,6 +1,7 @@
 'use client';
 
 import CategoryFilter from "@/components/CategoryFilter";
+import TodoForm from "@/components/TodoForm";
 import TodoList from "@/components/TodoList";
 import { useTodos } from "@/hooks/useTodos";
 import { Container, Typography } from "@mui/material";
@@ -13,6 +14,7 @@ export default function TodosPage() {
         setSelectedCategory,
         isLoading,
         error,
+        createTodo 
     } = useTodos();
 
     return (
@@ -20,6 +22,8 @@ export default function TodosPage() {
             <Typography variant="h4" component="h1" gutterBottom>
                 Todos
             </Typography>
+
+            <TodoForm categories={categories} onCreate={createTodo} />
 
             <CategoryFilter
                 categories={categories}
