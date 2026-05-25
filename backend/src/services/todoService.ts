@@ -55,7 +55,9 @@ export function createTodo(body: CreateTodo): Todo {
 }
 
 export function updateTodo(id: number, completed: boolean): Todo {
-    const existing = db.prepare("SELECT id FROM todos WHERE id = ?").get(id);
+    const existing = db
+        .prepare("SELECT id, category, completed FROM todos WHERE id = ?")
+        .get(id) as { id: number, category: string, completed: number } | undefined;
 
     if (!existing) {
         const err = new Error("Todo not found");
@@ -63,9 +65,32 @@ export function updateTodo(id: number, completed: boolean): Todo {
         throw err;
     }
 
-    db.prepare("UPDATE todos SET completed = ? WHERE id = ?").run(completed ? 1 : 0, id);
+    const isCurrentlyCompleted = existing.completed === 1;
+    const willBeActive = !completed;
 
-    const row = db.prepare("SELECT * FROM todos WHERE id = ?").get(id) as TodoRow;
+    if (isCurrentlyCompleted && willBeActive) {
+        const activeCount = db
+            .prepare(
+                "SELECT COUNT(*) AS count FROM todos WHERE category = ? AND completed = 0"
+            )
+            .get(existing.category) as { count: number };
+
+        if (activeCount.count >= ACTIVE_LIMIT) {
+            const err = new Error(
+                `Category ${existing.category} already has 5 tasks`
+            );
+            (err as Error & { status: number }).status = 400;
+            throw err;
+        }
+    }
+
+    db
+        .prepare("UPDATE todos SET completed = ? WHERE id = ?")
+        .run(completed ? 1 : 0, id);
+
+    const row = db
+        .prepare("SELECT * FROM todos WHERE id = ?")
+        .get(id) as TodoRow;
 
     return rowToTodo(row);
 }
