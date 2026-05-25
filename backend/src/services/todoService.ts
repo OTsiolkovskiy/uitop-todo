@@ -64,3 +64,19 @@ export function createTodo(body: CreateTodo): Todo {
 
     return rowToTodo(row);
 }
+
+export function updateTodo(id: number, completed: boolean): Todo {
+    const existing = db.prepare("SELECT id FROM todos WHERE id = ?").get(id);
+
+    if (!existing) {
+        const err = new Error("Todo not found");
+        (err as Error & { status: number }).status = 404;
+        throw err;
+    }
+
+    db.prepare("UPDATE todos SET completed = ? WHERE id = ?").run(completed ? 1 : 0, id);
+
+    const row = db.prepare("SELECT * FROM todos WHERE id = ?").get(id) as TodoRow;
+
+    return rowToTodo(row);
+}
