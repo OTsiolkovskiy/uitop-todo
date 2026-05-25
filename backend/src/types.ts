@@ -3,6 +3,14 @@ export interface Category {
     name: string;
 }
 
+export type TodoRow = {
+    id: number;
+    text: string;
+    category: string;
+    completed: number;
+    created_at: string;
+}
+
 export interface Todo {
     id: number;
     text: string;
