@@ -1,5 +1,5 @@
 import db from "../db.js";
-import { Category, CreateTodo, Todo, TodoRow } from "../type.js";
+import { Category, CreateTodo, Todo, TodoRow } from "../types.js";
 
 const ACTIVE_LIMIT = 5;
 
@@ -17,7 +17,7 @@ function rowToTodo(row: TodoRow): Todo {
     };
 }
 
-export function getTodos(category: string): Todo[] {
+export function getTodos(category?: string): Todo[] {
     const normalized = category?.trim();
 
     if (!normalized || normalized === "All") {
@@ -31,22 +31,7 @@ export function getTodos(category: string): Todo[] {
 }
 
 export function createTodo(body: CreateTodo): Todo {
-    const text = body.text.trim();
-    const category = body.category.trim();
-
-    if (!text || !category) {
-        const error = new Error("Text and category are required");
-        (error as Error & { status: number }).status = 400;
-        throw error
-    }
-
-    const categoryExists = db.prepare("SELECT 1 FROM categories WHERE name = ?").get(category);
-
-    if (!categoryExists) {
-        const err = new Error(`Unknown category: ${category}`);
-        (err as Error & { status: number }).status = 400;
-        throw err;
-    }
+    const { text, category } = body;
 
     const activeCount = db
         .prepare("SELECT COUNT(*) AS count FROM todos WHERE category = ? AND completed = 0")
@@ -58,9 +43,13 @@ export function createTodo(body: CreateTodo): Todo {
         throw err;
     }
 
+    const result = db
+        .prepare("INSERT INTO todos (text, category) VALUES (?, ?)")
+        .run(text, category);
 
-    const result = db.prepare("INSERT INTO todos (text, category) VALUES (?, ?)").run(text, category);
-    const row = db.prepare("SELECT * FROM todos WHERE id = ?").get(result.lastInsertRowid) as TodoRow;
+    const row = db
+        .prepare("SELECT * FROM todos WHERE id = ?")
+        .get(result.lastInsertRowid) as TodoRow;
 
     return rowToTodo(row);
 }
