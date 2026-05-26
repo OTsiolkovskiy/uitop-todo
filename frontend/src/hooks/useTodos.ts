@@ -26,7 +26,7 @@ export function useTodos() {
         try {
             const params = !category || category === "All" ? {} : { category };
             const { data } = await api.get<Todo[]>("/todos", { params });
-            setTodos(data);
+            setTodos(data.filter((t) => !t.completed));
         } catch (err) {
             setError(getErrorMessage(err));
             setTodos([]);
@@ -44,32 +44,32 @@ export function useTodos() {
             } catch (err) {
                 return getErrorMessage(err);
             }
-        }, [selectedCategory, fetchTodos]);
-
-    const toggleComplete = useCallback(
-        async (id: number, completed: boolean): Promise<string | null> => {
-            try {
-                await api.patch(`/todos/${id}`, { completed });
-                await fetchTodos(selectedCategory);
-                return null;
-            } catch (err) {
-                return getErrorMessage(err);
-            }
         },
         [selectedCategory, fetchTodos]
     );
 
-    const removeTodo = useCallback(
-        async (id: number): Promise<string | null> => {
+    const commitComplete = useCallback(
+        async (id: number, completed: boolean): Promise<string | null> => {
             try {
-                await api.delete(`/todos/${id}`);
-                await fetchTodos(selectedCategory);
+                await api.patch(`/todos/${id}`, { completed });
                 return null;
             } catch (err) {
                 return getErrorMessage(err);
             }
         },
-        [selectedCategory, fetchTodos]
+        []
+    );
+
+    const commitDelete = useCallback(
+        async (id: number): Promise<string | null> => {
+            try {
+                await api.delete(`/todos/${id}`);
+                return null;
+            } catch (err) {
+                return getErrorMessage(err);
+            }
+        },
+        []
     );
 
     useEffect(() => {
@@ -84,17 +84,17 @@ export function useTodos() {
         fetchTodos(selectedCategory);
     }, [fetchTodos, selectedCategory]);
 
-    return { 
-        categories, 
-        todos, 
-        error, 
-        refetch, 
-        isLoading, 
-        selectedCategory, 
+    return {
+        categories,
+        todos,
+        setTodos,
+        error,
+        refetch,
+        isLoading,
+        selectedCategory,
         setSelectedCategory,
         createTodo,
-        toggleComplete,
-        removeTodo
+        commitComplete,
+        commitDelete,
     };
-};
-
+}

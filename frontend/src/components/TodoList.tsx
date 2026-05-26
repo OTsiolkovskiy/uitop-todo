@@ -16,7 +16,7 @@ export default function TodoList({ todos, loading, error, onToggle, onDelete }: 
             <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
                 <CircularProgress />
             </Box>
-        )
+        );
     }
 
     if (error) {
@@ -43,5 +43,4 @@ export default function TodoList({ todos, loading, error, onToggle, onDelete }: 
             ))}
         </List>
     );
-
 }
