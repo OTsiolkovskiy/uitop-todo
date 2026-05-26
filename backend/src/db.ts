@@ -1,4 +1,6 @@
 import Database from "better-sqlite3";
+import { mkdirSync } from "node:fs";
+mkdirSync("data", { recursive: true });
 
 const db = new Database("data/todos.db");
 

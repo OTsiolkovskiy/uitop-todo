@@ -5,7 +5,7 @@ import categoriesRouter from "./routes/categories.js";
 import todosRouter from "./routes/todos.js";
 
 const app = express();
-const PORT = 4000;
+const PORT = Number(process.env.PORT) || 4000;
 
 app.use(cors());
 app.use(express.json());
