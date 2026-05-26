@@ -6,11 +6,19 @@ type TodoListProps = {
     todos: Todo[];
     loading: boolean;
     error: string | null;
+    actionsDisabled?: boolean;
     onToggle: (id: number, completed: boolean) => void;
     onDelete: (id: number) => void;
 };
 
-export default function TodoList({ todos, loading, error, onToggle, onDelete }: TodoListProps) {
+export default function TodoList({
+    todos,
+    loading,
+    error,
+    actionsDisabled = false,
+    onToggle,
+    onDelete,
+}: TodoListProps) {
     if (loading) {
         return (
             <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
@@ -37,6 +45,7 @@ export default function TodoList({ todos, loading, error, onToggle, onDelete }: 
                 <TodoItem
                     key={todo.id}
                     todo={todo}
+                    actionsDisabled={actionsDisabled}
                     onToggle={onToggle}
                     onDelete={onDelete}
                 />

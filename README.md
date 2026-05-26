@@ -3,7 +3,8 @@
 Full-stack task manager with categories.
 
 **Repo:** https://github.com/OTsiolkovskiy/uitop-todo  
-**Live demo:** _TBD_
+**Live demo:** https://uitop-todo-fawn.vercel.app  
+**API:** https://uitop-todo-s0bl.onrender.com
 
 ## Stack
 

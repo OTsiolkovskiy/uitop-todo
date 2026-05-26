@@ -19,6 +19,7 @@ type UsePendingActionsParams = {
     commitComplete: (id: number, completed: boolean) => Promise<string | null>;
     commitDelete: (id: number) => Promise<string | null>;
     onError?: (message: string) => void;
+    onCommitSuccess?: () => void;
 };
 
 export function usePendingActions({
@@ -26,11 +27,13 @@ export function usePendingActions({
     commitComplete,
     commitDelete,
     onError,
+    onCommitSuccess,
 }: UsePendingActionsParams) {
     const pendingRef = useRef<PendingAction | null>(null);
 
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState("");
+    const [isPending, setIsPending] = useState(false);
 
     const closeSnackbar = useCallback(() => {
         setSnackbarOpen(false);
@@ -48,20 +51,12 @@ export function usePendingActions({
             if (err) {
                 onError?.(err);
                 setTodos(snapshot);
+            } else {
+                onCommitSuccess?.();
             }
         },
-        [commitComplete, commitDelete, onError, setTodos]
+        [commitComplete, commitDelete, onError, onCommitSuccess, setTodos]
     );
-
-    const flushPending = useCallback(async () => {
-        const pending = pendingRef.current;
-        if (!pending) return;
-
-        clearTimeout(pending.timeoutId);
-        pendingRef.current = null;
-        closeSnackbar();
-        await runCommit(pending);
-    }, [closeSnackbar, runCommit]);
 
     const startPending = useCallback(
         (kind: PendingKind, todo: Todo, snapshot: Todo[]) => {
@@ -70,20 +65,20 @@ export function usePendingActions({
                 if (!current || current.todo.id !== todo.id) return;
 
                 pendingRef.current = null;
+                setIsPending(false);
                 closeSnackbar();
                 void runCommit(current);
             }, DELAY_MS);
 
             pendingRef.current = { kind, todo, snapshot, timeoutId };
+            setIsPending(true);
         },
         [closeSnackbar, runCommit]
     );
 
     const scheduleComplete = useCallback(
-        async (todo: Todo) => {
-            if (todo.completed) return;
-
-            await flushPending();
+        (todo: Todo) => {
+            if (todo.completed || pendingRef.current) return;
 
             let snapshot: Todo[] = [];
             setTodos((prev) => {
@@ -97,12 +92,12 @@ export function usePendingActions({
             setSnackbarOpen(true);
             startPending("complete", todo, snapshot);
         },
-        [flushPending, setTodos, startPending]
+        [setTodos, startPending]
     );
 
     const scheduleDelete = useCallback(
-        async (todo: Todo) => {
-            await flushPending();
+        (todo: Todo) => {
+            if (pendingRef.current) return;
 
             let snapshot: Todo[] = [];
             setTodos((prev) => {
@@ -114,7 +109,7 @@ export function usePendingActions({
             setSnackbarOpen(true);
             startPending("delete", todo, snapshot);
         },
-        [flushPending, setTodos, startPending]
+        [setTodos, startPending]
     );
 
     const undo = useCallback(() => {
@@ -123,6 +118,7 @@ export function usePendingActions({
 
         clearTimeout(pending.timeoutId);
         pendingRef.current = null;
+        setIsPending(false);
         setTodos(pending.snapshot);
         closeSnackbar();
     }, [setTodos, closeSnackbar]);
@@ -138,6 +134,7 @@ export function usePendingActions({
     return {
         snackbarOpen,
         snackbarMessage,
+        isPending,
         scheduleComplete,
         scheduleDelete,
         undo,

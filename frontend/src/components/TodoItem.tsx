@@ -14,11 +14,17 @@ import type { Todo } from "@/types/todo";
 
 type TodoItemProps = {
     todo: Todo;
+    actionsDisabled?: boolean;
     onToggle: (id: number, completed: boolean) => void;
     onDelete: (id: number) => void;
 };
 
-export default function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
+export default function TodoItem({
+    todo,
+    actionsDisabled = false,
+    onToggle,
+    onDelete,
+}: TodoItemProps) {
     return (
         <ListItem
             divider
@@ -26,6 +32,7 @@ export default function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
                 <IconButton
                     edge="end"
                     aria-label="delete"
+                    disabled={actionsDisabled}
                     onClick={() => onDelete(todo.id)}
                 >
                     <DeleteIcon />
@@ -38,6 +45,7 @@ export default function TodoItem({ todo, onToggle, onDelete }: TodoItemProps) {
                     <Checkbox
                         edge="start"
                         checked={todo.completed}
+                        disabled={actionsDisabled}
                         onChange={(e) => onToggle(todo.id, e.target.checked)}
                     />
                 </ListItemIcon>

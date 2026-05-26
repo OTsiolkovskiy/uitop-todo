@@ -28,27 +28,22 @@ export default function TodosPage() {
 
     const pending = usePendingActions({
         setTodos,
-        commitComplete: async (id, completed) => {
-            const err = await commitComplete(id, completed);
-            if (!err) refetch();
-            return err;
-        },
-        commitDelete: async (id) => {
-            const err = await commitDelete(id);
-            if (!err) refetch();
-            return err;
-        },
+        commitComplete,
+        commitDelete,
         onError: (msg) => setActionError(msg),
+        onCommitSuccess: refetch,
     });
 
     const handleToggle = async (id: number, checked: boolean) => {
+        if (pending.isPending) return;
+
         const todo = todos.find((t) => t.id === id);
         if (!todo) return;
 
         setActionError(null);
 
         if (checked) {
-            await pending.scheduleComplete(todo);
+            pending.scheduleComplete(todo);
         } else {
             const err = await commitComplete(id, false);
             if (err) {
@@ -59,11 +54,13 @@ export default function TodosPage() {
         }
     };
 
-    const handleDelete = async (id: number) => {
+    const handleDelete = (id: number) => {
+        if (pending.isPending) return;
+
         const todo = todos.find((t) => t.id === id);
         if (!todo) return;
         setActionError(null);
-        await pending.scheduleDelete(todo);
+        pending.scheduleDelete(todo);
     };
 
     return (
@@ -94,6 +91,7 @@ export default function TodosPage() {
                 todos={todos}
                 loading={isLoading}
                 error={error}
+                actionsDisabled={pending.isPending}
                 onToggle={handleToggle}
                 onDelete={handleDelete}
             />
