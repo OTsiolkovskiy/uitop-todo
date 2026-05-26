@@ -1,13 +1,16 @@
 import { Todo } from "@/types/todo";
-import { Alert, Box, CircularProgress, List, ListItem, ListItemText, Typography } from "@mui/material";
+import { Alert, Box, CircularProgress, List, Typography } from "@mui/material";
+import TodoItem from "./TodoItem";
 
 type TodoListProps = {
     todos: Todo[];
     loading: boolean;
     error: string | null;
+    onToggle: (id: number, completed: boolean) => void;
+    onDelete: (id: number) => void;
 };
 
-export default function TodoList({ todos, loading, error }: TodoListProps) {
+export default function TodoList({ todos, loading, error, onToggle, onDelete }: TodoListProps) {
     if (loading) {
         return (
             <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
@@ -31,15 +34,12 @@ export default function TodoList({ todos, loading, error }: TodoListProps) {
     return (
         <List>
             {todos.map((todo) => (
-                <ListItem key={todo.id} divider>
-                    <ListItemText
-                        primary={todo.text}
-                        secondary={`${todo.category} · ${todo.completed ? "Done" : "Active"}`}
-                        sx={{
-                            textDecoration: todo.completed ? "line-through" : "none",
-                        }}
-                    />
-                </ListItem>
+                <TodoItem
+                    key={todo.id}
+                    todo={todo}
+                    onToggle={onToggle}
+                    onDelete={onDelete}
+                />
             ))}
         </List>
     );

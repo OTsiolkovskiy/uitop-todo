@@ -46,6 +46,32 @@ export function useTodos() {
             }
         }, [selectedCategory, fetchTodos]);
 
+    const toggleComplete = useCallback(
+        async (id: number, completed: boolean): Promise<string | null> => {
+            try {
+                await api.patch(`/todos/${id}`, { completed });
+                await fetchTodos(selectedCategory);
+                return null;
+            } catch (err) {
+                return getErrorMessage(err);
+            }
+        },
+        [selectedCategory, fetchTodos]
+    );
+
+    const removeTodo = useCallback(
+        async (id: number): Promise<string | null> => {
+            try {
+                await api.delete(`/todos/${id}`);
+                await fetchTodos(selectedCategory);
+                return null;
+            } catch (err) {
+                return getErrorMessage(err);
+            }
+        },
+        [selectedCategory, fetchTodos]
+    );
+
     useEffect(() => {
         fetchCategories();
     }, [fetchCategories]);
@@ -66,7 +92,9 @@ export function useTodos() {
         isLoading, 
         selectedCategory, 
         setSelectedCategory,
-        createTodo
+        createTodo,
+        toggleComplete,
+        removeTodo
     };
 };
 

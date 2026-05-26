@@ -14,7 +14,9 @@ export default function TodosPage() {
         setSelectedCategory,
         isLoading,
         error,
-        createTodo 
+        createTodo,
+        toggleComplete,
+        removeTodo,
     } = useTodos();
 
     return (
@@ -31,7 +33,13 @@ export default function TodosPage() {
                 onChange={setSelectedCategory}
             />
 
-            <TodoList todos={todos} loading={isLoading} error={error} />
+            <TodoList 
+                todos={todos} 
+                loading={isLoading} 
+                error={error} 
+                onToggle={(id, completed) => { toggleComplete(id, completed); }}
+                onDelete={(id) => { removeTodo(id); }}
+            />
 
         </Container>
     )
