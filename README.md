@@ -1,10 +1,18 @@
 # UITOP Todo
 
-Backend API for a task manager with categories (Express + TypeScript + SQLite).
+Full-stack task manager with categories.
 
-**Repo:** https://github.com/OTsiolkovskiy/uitop-todo
+**Repo:** https://github.com/OTsiolkovskiy/uitop-todo  
+**Live demo:** _TBD_
+
+## Stack
+
+- **Frontend:** Next.js, React, TypeScript, MUI, React Hook Form, Axios
+- **Backend:** Express, TypeScript, SQLite (`better-sqlite3`), Zod
 
 ## Run
+
+**Backend** (port 4000):
 
 ```bash
 cd backend
@@ -12,38 +20,43 @@ npm install
 npm run dev
 ```
 
-Server: http://localhost:4000
+**Frontend** (port 3000):
+
+```bash
+cd frontend
+npm install
+```
+
+Create `frontend/.env.local`:
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:4000
+```
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000
+
+> **Windows:** `better-sqlite3` may require [VS Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (C++ workload).
+
+## Features
+
+- Create, complete, and delete todos with category
+- Filter by category or show all
+- Max **5 active** tasks per category
+- Snackbar with **Undo** (5s) on complete and delete
+- Loading, error, and empty states
 
 ## API
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/categories` | List categories |
-| GET | `/todos` | List todos (`?category=Work` optional) |
-| POST | `/todos` | Create todo |
-| PATCH | `/todos/:id` | Update `completed` |
-| DELETE | `/todos/:id` | Delete todo (204) |
+| GET | `/categories` | Categories list |
+| GET | `/todos` | Todos (`?category=Work`) |
+| POST | `/todos` | Create `{ "text", "category" }` |
+| PATCH | `/todos/:id` | Update `{ "completed": true }` |
+| DELETE | `/todos/:id` | Delete |
 
-### POST body
-
-```json
-{ "text": "Buy milk", "category": "Work" }
-```
-
-Categories: `Work`, `Personal`, `Shopping`, `Health`, `Other`.
-
-### PATCH body
-
-```json
-{ "completed": true }
-```
-
-## 5 tasks per category
-
-Max **5 active** (not completed) tasks per category. Completed tasks do not count.
-
-Returns `400` with `{ "error": "Category Work already has 5 tasks" }` on POST or when reactivating via PATCH.
-
-## Stack
-
-- Express, TypeScript, better-sqlite3, Zod
+Limit error: `400` — `{ "error": "Category Work already has 5 tasks" }`
